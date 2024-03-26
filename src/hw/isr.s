@@ -20,6 +20,7 @@
 @ r2: <scratch>
 @ r3: Handler function
 fn isrDefault arm
+    mov         r0, 0x04000000
     @ Read IE & IF
     ldr         r1, [r0, OFF_IE]!                               @ 3
     and         r1, r1, r1, lsr 16                              @ 4
