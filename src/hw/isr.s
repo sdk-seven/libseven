@@ -48,10 +48,15 @@ fn isrDefault arm
     cmp         r3, 0                                           @ 25
     bxeq        lr                                              @ 26 / 28
 
+    @ Save and disable IME
+    ldr         r12, =0x04000208
+    ldr         r0, [r12]
+    str         r12, [r12]
+
     @ Enable nesting
     mrs         r2, spsr                                        @ 27
-    msr         cpsr_c, 0x9F                                    @ 28
-    push        {r2, lr}                                        @ 31
+    msr         cpsr_c, 0x1F                                    @ 28
+    push        {r0, r2, r12, lr}                               @ 31
 
     @ Call
     mov         r0, r1                                          @ 32
@@ -59,9 +64,13 @@ fn isrDefault arm
     bx          r3                                              @ 36
 
     @ Return
-    pop         {r2, lr}                                        @ 40
+    pop         {r0, r2, r12, lr}                               @ 40
     msr         cpsr_c, 0x92                                    @ 41
     msr         spsr, r2                                        @ 42
+
+    @ Restore IME
+    str         r0, [r12]
+
     bx          lr                                              @ 45
 data ISR_DEFAULT_HANDLERS global .inline=1
     .fill       16, 4, 0
