@@ -16,22 +16,23 @@ project(libseven C ASM)
 set(CMAKE_INCLUDE_FLAG_ASM "-Wa,-I")
 
 add_library(seven STATIC
-    src/hw/bios.c
-    src/hw/bios.s
-    src/hw/dma.s
-    src/hw/input.c
-    src/hw/irq.c
-    src/hw/isr.s
-    src/hw/sram.s
-    src/hw/timer.c
+    src/bios.c
+    src/bios.s
+    src/dma.s
+    src/input.c
+    src/irq.c
+    src/irq_entry.s
+    src/sram.s
+    src/timer.c
     src/video/oam.s
+    src/video/vram.c
 )
 
 target_include_directories(seven PUBLIC include/)
 target_include_directories(seven PRIVATE src/)
 
 target_compile_options(seven PRIVATE
-    $<$<COMPILE_LANGUAGE:C>:-Os -g3 -gdwarf-4 -ffunction-sections -fdata-sections -std=c99 -Wall -Wpedantic -mabi=aapcs -mcpu=arm7tdmi -mthumb>
+    $<$<COMPILE_LANGUAGE:C>:-O2 -g3 -gdwarf-4 -ffunction-sections -fdata-sections -std=c99 -Wall -Wextra -Wpedantic -mabi=aapcs -mcpu=arm7tdmi -mthumb -masm-syntax-unified>
 )
 
 # Allow the string "libseven" as a parameter for target_link_libraries

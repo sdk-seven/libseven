@@ -1,5 +1,5 @@
 project('libseven', 'c',
-  version: '0.22.3',
+  version: '0.23.0',
   license: 'MPL-2.0',
   meson_version: '>=0.64.0',
   default_options: ['warning_level=2', 'c_std=c99'])
@@ -11,14 +11,14 @@ else
 endif
 
 sources = [
-  'src/hw/bios.c',
-  'src/hw/bios.s',
-  'src/hw/dma.s',
-  'src/hw/input.c',
-  'src/hw/irq.c',
-  'src/hw/isr.s',
-  'src/hw/sram.s',
-  'src/hw/timer.c',
+  'src/bios.c',
+  'src/bios.s',
+  'src/dma.s',
+  'src/input.c',
+  'src/irq.c',
+  'src/irq_entry.s',
+  'src/sram.s',
+  'src/timer.c',
   'src/video/oam.s',
   'src/video/vram.c',
 ]

@@ -10,27 +10,24 @@
 
 _LIBSEVEN_EXTERN_C
 
-// Interrupt Enable
-//
+#define IRQ_ENTRY _LIBSEVEN_TARGET_ARM
+
+// Interrupt Enable Register.
 #define REG_IE     VOLADDR(0x04000200, uint16_t)
 
-// Interrupt Flags
-//
+// Interrupt Flags Register.
 #define REG_IF     VOLADDR(0x04000202, uint16_t)
 
-// Interrupt Master Enable
-//
+// Interrupt Master Enable Register.
 #define REG_IME    VOLADDR(0x04000208, uint16_t)
 
-// Interrupt Service Routine Function Pointer
-//
-#define MEM_ISR    VOLADDR(0x03FFFFFC, IsrFn*)
+// Interrupt Entry Function Pointer.
+#define MEM_ISR    VOLADDR(0x03FFFFFC, IrqEntryFn*)
 
-// Interrupt Flags used by BIOS
+// Interrupt Flags used by BIOS wait functions.
 #define MEM_IFBIOS VOLADDR(0x03FFFFF8, uint16_t)
 
-// IRQ bitflags
-//
+// Interrupt flags.
 enum IRQFlag
 {
     IRQ_VBLANK    = BIT(0),
@@ -49,8 +46,7 @@ enum IRQFlag
     IRQ_CARTRIDGE = BIT(13),
 };
 
-// Common sets of IRQs
-//
+// Common sets of interrupts.
 enum IRQGroup
 {
     IRQS_BLANK    = IRQ_VBLANK  | IRQ_HBLANK,
@@ -61,7 +57,7 @@ enum IRQGroup
     IRQS_ALL      = BITS(14),
 };
 
-// Bit indices of IRQs
+// Bit indices of interrupts.
 enum IRQIndex
 {
     IRQ_INDEX_VBLANK,
@@ -81,47 +77,59 @@ enum IRQIndex
     IRQ_INDEX_MAX,
 };
 
-// Function type for interrupt service routines (ISRs)
+// Function type for interrupt entry.
 //
-// Function must be ARM code, and ideally be placed in IWRAM.
+// The interrupt entry function is called by the BIOS when the CPU receives an interrupt request
+// (IRQ). This function must use ARM code, and is typically located in IWRAM.
 //
-// Use the ISR_FUNCTION attribute to mark the function appropriately.
-typedef void IsrFn(void);
+// Libseven provides two optimized interrupt entry functions, available through `irqInitVectored`
+// and `irqInitMinimal`. To use your own interrupt entry function, call `irqInit`.
+//
+// Use the IRQ_ENTRY attribute to define your own entry function.
+typedef void IrqEntryFn(void);
 
 // Function type for interrupt callbacks.
 //
+// Callback functions are used by libseven's "vectored" and "minimal" interrupt entry functions.
+//
 // The function receives the triggered IRQs as the first parameter.
-typedef void IrqHandlerFn(uint16_t);
+typedef void IrqFn(uint16_t);
 
 // Initialize interrupt handling with a user-provided function.
 //
-extern void irqInit(IsrFn *isr);
+extern void irqInit(IrqEntryFn *entry);
 
-// Initialize interrupt handling using a handler system.
+// Initialize interrupt handling using an array of handler functions.
 //
-// Used with the irqHandler* functions.
-// Supports nesting by calling irqUnmask() inside a handler.
-extern void irqInitDefault(void);
-
-// Initialize interrupt handling using an optional, single handler function.
+// Uses the system mode stack for operation, so more stack space is available by default.
+// Nested interrupts can be opted into by calling `irqUnmask`.
 //
-// Does not support nesting by default.
-extern void irqInitMinimal(IrqHandlerFn *fn);
+// See the `irqHandler*` functions for setting up handler functions.
+extern void irqInitVectored(void);
 
-// Set the handler associated with the specified irq.
+// Initialize interrupt handling using a single, optional handler function.
+//
+// Uses the interrupt mode stack for operation, so stack space is limited by default.
+// Nested interrupts are *not* supported by default.
+//
+// If `fn` is NULL, no function will be called. This provides the minimum handling required for
+// `biosIntrWait` / `biosVBlankIntrWait` to work.
+extern void irqInitMinimal(IrqFn *fn);
+
+// Set the callback associated with the specified irq.
 //
 // Fails if irq specifies more than one interrupt.
-extern bool irqHandlerSet(uint16_t irq, IrqHandlerFn *fn);
+extern bool irqCallbackSet(uint16_t irq, IrqFn *fn);
 
 // Get the callback associated with the specified irq.
 //
 // Fails if irq specifies more than one interrupt.
-extern bool irqHandlerGet(uint16_t irq, IrqHandlerFn **fn);
+extern bool irqCallbackGet(uint16_t irq, IrqFn **fn);
 
-// Swap the handler associated with the specified irq, returning the old one.
+// Swap the callback associated with the specified irq, returning the old one.
 //
 // Fails if irq specifies more than one interrupt.
-extern bool irqHandlerSwap(uint16_t, IrqHandlerFn **fn);
+extern bool irqCallbackSwap(uint16_t, IrqFn **fn);
 
 // Enable the specified IRQs.
 //
@@ -133,13 +141,13 @@ extern uint16_t irqEnable(uint16_t irqs);
 // Returns the old value of the IE register.
 extern uint16_t irqDisable(uint16_t irqs);
 
-// Calls a function with IRQs disabled, passing data as an argument.
+// Calls `f(arg)` with interrupts disabled.
 extern void irqFree(void (*f)(void *), void *arg);
 
 // Mask IRQs at the CPU level.
 extern void irqMask(void);
 
-// Unmask IRQs at the CPU level. Used for enabling nested interrupts.
+// Unmask IRQs at the CPU level.
 extern void irqUnmask(void);
 
 // Returns whether IRQs are masked at the CPU level.

@@ -7,8 +7,8 @@
 #include <seven/base.h>
 #include <seven/irq.h>
 
-extern IsrFn isrDefault;
-extern IsrFn isrMinimal;
+extern IrqEntryFn isrDefault;
+extern IrqEntryFn isrMinimal;
 
 // Mark these as volatile because LTO cannot verify that isrDefault/isrMinimal
 // is called because it's invoked indirectly through the hardware.
@@ -18,10 +18,10 @@ extern IsrFn isrMinimal;
 //
 // For our purposes, writing these does produce a side effect, so volatile is
 // actually the semantically correct option here.
-extern IrqHandlerFn * volatile ISR_MINIMAL_HANDLER;
-extern IrqHandlerFn * volatile ISR_DEFAULT_HANDLERS[16];
+extern IrqFn * volatile ISR_MINIMAL_HANDLER;
+extern IrqFn * volatile ISR_DEFAULT_HANDLERS[16];
 
-extern void irqInit(IsrFn *isr)
+extern void irqInit(IrqEntryFn *isr)
 {
     REG_IME = 0;
     REG_IE = 0;
@@ -32,7 +32,7 @@ extern void irqInit(IsrFn *isr)
     REG_IME = 1;
 }
 
-extern void irqInitDefault(void)
+extern void irqInitVectored(void)
 {
     REG_IME = 0;
 
@@ -44,7 +44,7 @@ extern void irqInitDefault(void)
     irqInit(isrDefault);
 }
 
-extern void irqInitMinimal(IrqHandlerFn *handler)
+extern void irqInitMinimal(IrqFn *handler)
 {
     REG_IME = 0;
 
@@ -53,7 +53,7 @@ extern void irqInitMinimal(IrqHandlerFn *handler)
     irqInit(isrMinimal);
 }
 
-extern bool irqHandlerSet(uint16_t irq, IrqHandlerFn *fn)
+extern bool irqCallbackSet(uint16_t irq, IrqFn *fn)
 {
     if (!irq || (irq & (irq - 1)))
     {
@@ -65,7 +65,7 @@ extern bool irqHandlerSet(uint16_t irq, IrqHandlerFn *fn)
     return true;
 }
 
-extern bool irqHandlerGet(uint16_t irq, IrqHandlerFn **fn)
+extern bool irqCallbackGet(uint16_t irq, IrqFn **fn)
 {
     if (!irq || (irq & (irq - 1)))
     {
@@ -77,7 +77,7 @@ extern bool irqHandlerGet(uint16_t irq, IrqHandlerFn **fn)
     return true;
 }
 
-extern bool irqHandlerSwap(uint16_t irq, IrqHandlerFn **fn)
+extern bool irqCallbackSwap(uint16_t irq, IrqFn **fn)
 {
     if (!irq || (irq & (irq - 1)))
     {
@@ -86,7 +86,7 @@ extern bool irqHandlerSwap(uint16_t irq, IrqHandlerFn **fn)
 
     uint32_t idx = (uint32_t)(0x09AF0000 * irq) >> 28;
 
-    IrqHandlerFn *p = ISR_DEFAULT_HANDLERS[idx];
+    IrqFn *p = ISR_DEFAULT_HANDLERS[idx];
     ISR_DEFAULT_HANDLERS[idx] = *fn;
     *fn = p;
 
@@ -129,7 +129,8 @@ extern void irqFree(void (*f)(void *), void *arg)
     REG_IME = ime;
 }
 
-_LIBSEVEN_TARGET_ARM extern void irqMask(void)
+_LIBSEVEN_TARGET_ARM
+extern void irqMask(void)
 {
     __asm__ volatile
     (
@@ -140,7 +141,8 @@ _LIBSEVEN_TARGET_ARM extern void irqMask(void)
     );
 }
 
-_LIBSEVEN_TARGET_ARM extern void irqUnmask(void)
+_LIBSEVEN_TARGET_ARM
+extern void irqUnmask(void)
 {
     __asm__ volatile
     (
@@ -151,7 +153,8 @@ _LIBSEVEN_TARGET_ARM extern void irqUnmask(void)
     );
 }
 
-_LIBSEVEN_TARGET_ARM extern bool irqMasked(void)
+_LIBSEVEN_TARGET_ARM
+extern bool irqMasked(void)
 {
     bool masked;
 

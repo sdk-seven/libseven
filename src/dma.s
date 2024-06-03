@@ -7,8 +7,9 @@
 .syntax         unified
 .cpu            arm7tdmi
 
-.include        "constants.s"
 .include        "macros.s"
+
+.equiv          REG_DMA0SRC, 0x040000B0
 
 fn dmaSet thumb
     @ Bounds check
