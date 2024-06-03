@@ -11,14 +11,12 @@
 _LIBSEVEN_EXTERN_C
 
 // Keypad input register. Reports held keys as active-low bits.
-//
 #define REG_KEYINPUT VOLADDR(0x04000130, const uint16_t)
 
 // Keypad control register. Allows configuring the keypad IRQ.
-//
 #define REG_KEYCNT   VOLADDR(0x04000132, uint16_t)
 
-// Key bits as used by KEYINPUT and KEYCNT.
+// Key bits.
 enum Key
 {
     KEY_A               = BIT(0),
@@ -33,7 +31,7 @@ enum Key
     KEY_L               = BIT(9),
 };
 
-// Groupings of key bits.
+// Common combinations of key bits.
 enum KeyGroup
 {
     KEYS_DPAD_X         = KEY_LEFT      | KEY_RIGHT,
@@ -46,7 +44,7 @@ enum KeyGroup
     KEYS_ALL            = KEYS_DPAD     | KEYS_BUTTONS,
 };
 
-// Bit indices of keys bits.
+// Bit-indices of keys.
 enum KeyIndex
 {
     KEY_INDEX_A,
@@ -90,25 +88,48 @@ struct InputRepeat
 // Returns a fresh InputState.
 extern struct InputState inputNew(void);
 
-// Updates the given keypad state. Should be called once per frame.
-extern struct InputState inputPoll(struct InputState i);
+// Polls the state of the buttons and updates `input`. Should be called once per frame.
+extern void inputPoll(struct InputState *input);
 
-// Inject the given keys into the given keypad state. Equivalent to calling inputPoll, if REG_KEYINPUT returned keys.
-extern struct InputState inputInject(uint16_t keys, struct InputState i);
+// The following functions all return a new InputState. This is because some operations, like
+// key repeat, require knowledge of the "true" input state (i.e. the stream of inputs returned by
+// `inputPoll`, without any modifications).
+//
+// This means you should save the result of these functions in a separate variable from the one
+// you pass to `inputPoll` each frame, and use them in your program's logic as needed.
+// This has the benefit that you can differentiate between real user inputs and,
+// for example, injected inputs used as part of a replay system or.
+//
+// Example:
+// ```c
+// struct InputState i = inputNew();
+//
+// while (game_running)
+// {
+//      inputPoll(&i);
+//
+//      struct InputState processed = inputFilterSocd(i);
+//      /* maybe apply other input modifiers to `processed` */
+//
+//      /* use `processed` in your game logic */
+// }
+// ```
 
-// Performs SOCD (Simultaneous Opposed Cardinal Direction) filtering on the given input state.
-// Uses a neutral resolution, meaning holding opposite direction results in neither direction being held.
+// Injects `keys` into `input` and returns a new InputState.
+extern struct InputState inputInject(uint16_t keys, struct InputState input);
+
+// Performs neutral SOCD (Simultaneous Opposed Cardinal Direction) filtering on `input`
+// and returns a new InputState.
+//
+// Holding opposite directions results in neither direction being held.
 extern struct InputState inputFilterSocd(struct InputState i);
 
 // [WIP]
 //
 // Applies the given repeat state to the given input state. Should be called once per frame.
-//
-// This input layer should be applied last, and the resulting state stored separately from the input state.
-// This is because to track the repeat state correctly, the function needs the "true" input state.
-// extern struct InputState inputApplyRepeat(struct InputRepeat *r, struct InputState i);
+// extern struct InputState inputApplyRepeatUnstable(struct InputRepeat *r, struct InputState i);
 
-// Returns the keys that were pressed this frame. ("Rising egde")
+// Returns the keys that were pressed this frame. ("Rising edge")
 extern uint16_t inputKeysPressed(uint16_t keys, struct InputState i);
 
 // Returns the keys that were released this frame. ("Falling edge")

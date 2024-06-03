@@ -1,5 +1,5 @@
 project('libseven', 'c',
-  version: '0.23.0',
+  version: '0.24.0-beta',
   license: 'MPL-2.0',
   meson_version: '>=0.64.0',
   default_options: ['warning_level=2', 'c_std=c99'])

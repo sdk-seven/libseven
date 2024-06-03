@@ -1,97 +1,35 @@
 # Stability
 
-Written for: libseven 0.13.0
+Written for: libseven 0.24.0
 
-Libseven is currently still in active development, and subject to many changes.
-Some parts are considered mature, but a truly stable 1.0.0 release is still
-a while away. This page aims to document the current state of libseven's APIs.
-
-The information here comes without any guarantee of being or remaining true.
-
-## Roadmap
-
-Libseven follows semver, but due to the large amount of different, independent
+Libseven follows [semver], but due to the large amount of different, independent
 modules, stability will be tiered.
 
-### 1.0.0
+This page aims to document the current state of libseven's APIs with regards to stability.
+The information here comes without any guarantee of being or remaining true.
 
-Version 1.0.0, the following modules will be considered stable, and subject to
-the proper semantic versioning rules:
+## 1.0.0
 
-- `<seven/base.h>`
-- `<seven/prelude.h>`
-- `<seven/hw/bios.h>`
-- `<seven/hw/dma.h>`
-- `<seven/hw/input.h>`
-- `<seven/hw/irq.h>`
-- `<seven/hw/memory.h>`
-- `<seven/hw/timer.h>`
-- `<seven/hw/video.h>`
-- `<seven/hw/waitstate.h>`
+For libseven 1.0.0, all public definitions present in the following headers will be considered
+stable and subject to the typical semver rules.
 
-Everything else will continue to be subject to pre-1.0 rules.
+Any definitions using the `_LIBSEVEN` prefix are not subject to stability rules.
 
-### 2.0.0
+Items with a filled checkbox are semi-stable and will receive only minimal changes before 1.0.0.
 
-Version 2.0.0 will fully stabilize the following:
+- [x] `<seven/attributes.h>`
+- [x] `<seven/base.h>`
+- [ ] `<seven/bios.h>`
+- [x] `<seven/dma.h>`
+- [ ] `<seven/input.h>`
+- [x] `<seven/irq.h>`
+- [x] `<seven/memory.h>`
+- [x] `<seven/prelude.h>`
+- [x] `<seven/timer.h>`
+- [x] `<seven/types.h>`
+- [ ] `<seven/video.h>`
+- [ ] `<seven/waitstate.h>`
 
-- `<seven/hw/bios/*>`
-- `<seven/hw/serial.h>`
-- `<seven/hw/sram.h>`
-- `<seven/hw/video/*>`
+Anything not listed above will continue to be subject to pre-1.0.0 semver rules.
 
-### 3.0.0 Onwards
-
-There are no concrete plans for version 3.0.0 and beyond, though the general
-focus will be the serial I/O and sound APIs.
-
-There is no roadmap for the utility headers, as they may be factored out into
-their own library entirely.
-
-## Stable
-
-These modules are considered stable, meaning they should not be subject to
-breaking changes until 1.0.0.
-
-- `<seven/hw/bios.h>`
-- `<seven/hw/dma.h>`
-- `<seven/hw/input.h>`
-- `<seven/hw/irq.h>`
-- `<seven/hw/memory.h>`
-
-## Stable, But...
-
-These modules are considered stable, but shouldn't be relied on too strongly:
-
-- The `<seven/prelude.h>` and any other 'prelude' headers
-- The `<seven/base/*>` headers
-
-## Stable-ish
-
-These modules may receive minor breaking changes,
-such as naming or content changes.
-
-- The `<seven/hw/bios/*>` headers
-- `<seven/hw/timer.h>`
-- `<seven/hw/video.h>`
-- `<seven/hw/waitstate.h>`
-
-## Unstable
-
-These modules may receive major breaking changes,
-such as significant rewrites, or deletion.
-
-- `<seven/hw/cartridge.h>`
-- `<seven/hw/cpu.h>`
-- `<seven/hw/serial.h>`
-- `<seven/hw/sram.h>`
-- The `<seven/hw/video/*>` headers
-- The `<seven/util/*>` headers
-
-## Unimplemented
-
-These modules are not yet usable, but are present for organisational purposes:
-
-- `<seven/hw/sound.h>`
-- The `<seven/hw/serial/*>` headers
-- `<seven/hw/video/palette.h>`
+[semver]: https://semver.org

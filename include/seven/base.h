@@ -29,13 +29,16 @@
 #define _LIBSEVEN_TARGET_ARM __attribute__((__target__("arm"), __noinline__))
 
 #define LIBSEVEN_VERSION_MAJOR 0
-#define LIBSEVEN_VERSION_MINOR 23
+#define LIBSEVEN_VERSION_MINOR 24
 #define LIBSEVEN_VERSION_PATCH 0
+
+#define LIBSEVEN_VERSION_PRERELEASE "-beta"
 
 #define LIBSEVEN_VERSION \
     _LIBSEVEN_STR1(LIBSEVEN_VERSION_MAJOR) "." \
     _LIBSEVEN_STR1(LIBSEVEN_VERSION_MINOR) "." \
-    _LIBSEVEN_STR1(LIBSEVEN_VERSION_PATCH)
+    _LIBSEVEN_STR1(LIBSEVEN_VERSION_PATCH) \
+    LIBSEVEN_VERSION_PRERELEASE
 
 #define VOLADDR(addr, type)        (*(type volatile (*))(addr))
 #define VOLARRAY(addr, type, size) (*(type volatile (*)[size])(addr))

@@ -5,11 +5,12 @@ extern struct InputState inputNew(void)
     return (struct InputState){ KEYS_ALL, KEYS_ALL };
 }
 
-extern struct InputState inputPoll(struct InputState i)
+extern void inputPoll(struct InputState *i)
 {
-    i.last = i.now;
-    i.now = REG_KEYINPUT;
-    return i;
+    struct InputState next = *i;
+    next.last = next.now;
+    next.now = REG_KEYINPUT;
+    *i = next;
 }
 
 extern struct InputState inputInject(uint16_t keys, struct InputState i)
@@ -34,7 +35,7 @@ extern struct InputState inputFilterSocd(struct InputState i)
     return i;
 }
 
-extern struct InputState inputApplyRepeat(struct InputRepeat *r, struct InputState i)
+extern struct InputState inputApplyRepeatUnstable(struct InputRepeat *r, struct InputState i)
 {
     bool c = inputKeysChanged(r->keys, i) & inputKeysDown(r->keys, i);
 
@@ -81,7 +82,7 @@ extern struct InputState inputApplyRepeat(struct InputRepeat *r, struct InputSta
     // hold x keys & input
     // ...
     // problem is we want to correctly propagate the keys through i.last
-    // but that requires tracking state changes between frames... 
+    // but that requires tracking state changes between frames...
     // all the user does is hold buttons, so bethere's only 4 meaningful statessides checking inputKeysChange(r->keys), there isn't any useful info there
     //
     // if delay state, unset keys, if hold state set keys (held | keys)

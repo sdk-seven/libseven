@@ -7,10 +7,10 @@
 #pragma once
 
 #include <seven/base.h>
+
 #include <seven/attributes.h>
-#include <seven/types.h>
-#include <seven/video.h>
+#include <seven/bios.h>
 #include <seven/input.h>
 #include <seven/irq.h>
 #include <seven/memory.h>
-#include <seven/bios.h>
+#include <seven/video.h>

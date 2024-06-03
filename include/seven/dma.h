@@ -10,7 +10,7 @@
 
 _LIBSEVEN_EXTERN_C
 
-// DMA RAM  ROM  Transfer limit
+// DMA RAM  ROM  Transfer limit (units)
 //  0  R/W   -   16K
 //  1  R/W   R   16K
 //  2  R/W   R   16K
@@ -36,7 +36,7 @@ _LIBSEVEN_EXTERN_C
 #define REG_DMA3LEN     VOLADDR(0x040000DC, uint16_t)
 #define REG_DMA3CNT     VOLADDR(0x040000DE, uint16_t)
 
-struct DMA
+struct DmaTransfer
 {
     const void *src;
     void *dst;
@@ -44,7 +44,7 @@ struct DMA
     uint16_t cnt;
 };
 
-enum DMAControl
+enum DmaControl
 {
     #define BF_DMA_DST_OFF 5
     #define BF_DMA_DST_LEN 2
@@ -89,7 +89,7 @@ enum DMAControl
     DMA_ENABLE          = BIT(15),
 };
 
-enum DMAControlPreset
+enum DmaPreset
 {
     DMA_PRESET_COPY16   = DMA_16BIT,
     DMA_PRESET_COPY32   = DMA_32BIT,
@@ -102,11 +102,14 @@ enum DMAControlPreset
 };
 
 #define DMA_LEN(len, flags) \
-    ((flags) & DMA_32BIT ? (len) >> 2 : (len) >> 1)
+    ((flags) & DMA_32BIT ? (len) / 4 : (len) / 2)
 
 #define DMA_BUILD(src, dst, len, flags) \
-    ((struct DMA){ src, dst, DMA_LEN(len, flags), flags })
+    ((struct DmaTransfer){ src, dst, DMA_LEN(len, flags), flags })
 
-extern void dmaSet(uint32_t channel, struct DMA dma);
+// Sets up the specified transfer on DMA `channel`.
+//
+// This operation is atomic with respect to interrupts.
+extern void dmaSet(uint32_t channel, struct DmaTransfer dma);
 
 _LIBSEVEN_EXTERN_C_END
